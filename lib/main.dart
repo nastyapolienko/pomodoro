@@ -154,7 +154,7 @@ class _PomodoroState extends State<Pomodoro>{
     s = true;
     fo = true;
     double SecPercent = (5 * 60/100);
-    // breaks = true;
+    breaks = true;
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if(Seconds == 0){
         Minutes--;
