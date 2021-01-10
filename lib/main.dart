@@ -27,13 +27,11 @@ class Pomodoro extends StatefulWidget {
   bool works = false;//points are u studying at the moment
   double percent = 0;//percents on the circle
   int Seconds = 0;//what u see in the circle
-  Timer timer = null;
+  Timer timer;
 
   String b = "Stop Timer";//default value for button 4
   String c = "Start a Break";//default value for button 2
-  int pressed = 0;//how many times have u pressed the button 2
   
-
 class _PomodoroState extends State<Pomodoro>{
   static int Minutes = 25;//work minutes
   int Time = Minutes * 60;//time for work
@@ -43,8 +41,10 @@ class _PomodoroState extends State<Pomodoro>{
   bool t = false;
   bool fo = false;//booleans for blocking the buttons
 
+  bool r = true;//equals to timer = null
+
   //all voids
-  Flushbar flush_1, flush_2;//attention messages
+  Flushbar flush_1, flush_2, flush_3_1, flush_3_2;//attention messages
    void start_flushbar(BuildContext context) {
     flush_1 = Flushbar<bool>(
       title: 'You started your $pomodoros pomodoro',
@@ -61,7 +61,7 @@ class _PomodoroState extends State<Pomodoro>{
         child: Text("OK", style: TextStyle(color: Colors.amber),)
       ),
       leftBarIndicatorColor: Colors.blue.shade300,
-      duration: Duration(seconds: 20),
+      duration: Duration(seconds: 3),
     )..show(context);
   }//message that u have started ur pomodoro
 
@@ -87,7 +87,7 @@ class _PomodoroState extends State<Pomodoro>{
               setState(() {
                 pomodoros--;
               });
-              timer = null;
+              r = true;
               flush_2.dismiss(true);
               f = true;
               s = false;
@@ -105,6 +105,61 @@ class _PomodoroState extends State<Pomodoro>{
     )..show(context);
   }//message that wants u to confirm timer reset
   
+  void break_flushbar(BuildContext context) {
+    flush_3_1 = Flushbar<bool>(
+      title: 'You started your break',
+      message: 'Have a nice rest',
+      icon: Icon(
+        Icons.info_outline,
+        size: 20,
+        color: Colors.blue.shade300,
+      ),
+      mainButton: FlatButton(
+        onPressed: (){
+          flush_3_1.dismiss(true);
+        },
+        child: Text("OK", style: TextStyle(color: Colors.amber),)
+      ),
+      leftBarIndicatorColor: Colors.blue.shade300,
+      duration: Duration(seconds: 3),
+    )..show(context);
+  }
+
+  void skip_flushbar(BuildContext context) {
+    flush_3_2 = Flushbar<bool>(
+      title: 'Do you really want to skip this break?',
+      message: ' ',
+      icon: Icon(
+        Icons.info_outline,
+        size: 20,
+        color: Colors.blue.shade300,
+      ),
+      mainButton: FlatButton(
+        onPressed: (){
+          setState(() {
+            timer.cancel();
+            r = true;
+            breaks = false;
+            works = false;
+            percent = 0;
+            Minutes = 25;
+            Seconds = 0;
+            Time = 25 * 60;
+            c = "Start a Break";
+            f = true;
+            s = false;
+            t = false;
+            fo = false;
+            flush_3_2.dismiss(true);
+          });
+        },
+        child: Text("Yes", style: TextStyle(color: Colors.amber),)
+      ),
+      leftBarIndicatorColor: Colors.blue.shade300,
+      duration: Duration(seconds: 3),
+    )..show(context);
+  }
+  
   _StartTimer(){//start or continue studying 
     f = false;
     s = false;
@@ -112,7 +167,7 @@ class _PomodoroState extends State<Pomodoro>{
     fo = true;
     double SecPercent = (25*60/100);
     works = true;
-    if (timer == null){
+    if (r | (!fo)){
       start_flushbar(context);
     }
     timer = Timer.periodic(Duration(seconds: 0), (timer) {
@@ -136,7 +191,7 @@ class _PomodoroState extends State<Pomodoro>{
           timer.cancel();
           breaks = true;
           works = false;
-          timer = null;
+          r = true;
           percent = 0;
           Minutes = 5;
           Time = 5 * 60;
@@ -155,6 +210,8 @@ class _PomodoroState extends State<Pomodoro>{
     fo = true;
     double SecPercent = (5 * 60/100);
     breaks = true;
+    if (!r)
+    break_flushbar(context);
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if(Seconds == 0){
         Minutes--;
@@ -176,15 +233,15 @@ class _PomodoroState extends State<Pomodoro>{
         else {
           timer.cancel();
           breaks = false;
-          timer = null;
+          r = true;
           percent = 0;
           Minutes = 25;
           Time = 25 * 60;
           c = "Start a Break";
-          f = false;
+          f = true;
           s = false;
-          t = true;
-          fo = true;
+          t = false;
+          fo = false;
         }
       });
     });
@@ -203,28 +260,16 @@ class _PomodoroState extends State<Pomodoro>{
 
   _onPressed_Break(){//onpressed button 2
     if(!s) return 0;
+
+    c = "Skip a Break";
+
     setState(() {
-      //offreset = true;//if break is running then block the reset button
-      c = "Skip a Break";
-      pressed += 1;
-      print(pressed);
       if(!breaks){
         print ("i am returning 0");
         return 0;
       }
-      if ((pressed % 2) == 0){//means that the break is skipped
-        breaks = false;
-        works = false;
-        percent = 0;
-        Minutes = 25;
-        Seconds = 0;
-        Time = 25 * 60;
-        c = "Start a Break";
-        f = true;
-        s = false;
-        t = false;
-        fo = false;
-        timer.cancel();
+      if (timer.isActive){//means that the break is skipped
+        skip_flushbar(context);
       }
       else {
         _StartBreak();
@@ -358,9 +403,9 @@ class _PomodoroState extends State<Pomodoro>{
                             ),
                             Container(
                               height: 18.00,
-                                child: Expanded(
+                                
                                   child: Text("The number of your pomodoros is $pomodoros"),
-                                )
+                                
                             ),
                             Padding(
                               padding: EdgeInsets.symmetric(vertical: 28.0),
@@ -369,7 +414,7 @@ class _PomodoroState extends State<Pomodoro>{
                                   Container(
                                     height: 80.00,
                                     child: Row(
-                                      children: [
+                                      children: <Widget>[
                                         Expanded(
                                           child: RaisedButton(
                                             onPressed: _onPressed,
@@ -410,7 +455,7 @@ class _PomodoroState extends State<Pomodoro>{
                                     height: 60.00,
                                     width: 300.00,
                                     child: Row(
-                                      children: [
+                                      children: <Widget>[
                                         Expanded(
                                           child: RaisedButton(
                                             onPressed: _ResetTimer, 
