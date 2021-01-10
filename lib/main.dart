@@ -168,9 +168,8 @@ class _PomodoroState extends State<Pomodoro>{
     fo = true;
     double SecPercent = (25*60/100);
     works = true;
-    if (!fo){
+    if (r | (!fo)){
       start_flushbar(context);
-    
     }
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if(Seconds == 0){
