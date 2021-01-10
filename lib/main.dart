@@ -170,6 +170,7 @@ class _PomodoroState extends State<Pomodoro>{
     works = true;
     if (!fo){
       start_flushbar(context);
+    
     }
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if(Seconds == 0){
