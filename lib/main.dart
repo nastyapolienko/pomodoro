@@ -146,6 +146,7 @@ class _PomodoroState extends State<Pomodoro>{
             Seconds = 0;
             Time = 25 * 60;
             c = "Start a Break";
+            b = "Stop Timer";
             f = true;
             s = false;
             t = false;
@@ -167,10 +168,10 @@ class _PomodoroState extends State<Pomodoro>{
     fo = true;
     double SecPercent = (25*60/100);
     works = true;
-    if (r | (!fo)){
+    if (!fo){
       start_flushbar(context);
     }
-    timer = Timer.periodic(Duration(seconds: 0), (timer) {
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if(Seconds == 0){
         Minutes--;
       }
@@ -268,7 +269,7 @@ class _PomodoroState extends State<Pomodoro>{
         print ("i am returning 0");
         return 0;
       }
-      if (timer.isActive){//means that the break is skipped
+      if (timer.isActive | (b == "Continue")){//means that the break is skipped
         skip_flushbar(context);
       }
       else {
